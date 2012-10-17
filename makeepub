@@ -1,0 +1,32 @@
+#!/bin/sh
+# http://lamium.blogspot.jp/2011/05/epub-zip.html
+
+epub_dir=$1
+epub_name=$2
+
+if [ "X$epub_dir" == "X" ]; then
+    echo "usage: `basename $0` <epub-dir> [epub-filename]"
+    exit
+fi
+
+if [ "X$epub_name" == "X" ]; then
+    epub_name=$epub_dir.epub
+fi
+
+if [ ! -d $epub_dir ]; then
+    echo "error: directory not found -- $epub_dir"
+    exit
+fi
+
+if [ -f $epub_name ]; then
+    echo "$epub_name file exists. overwrite? [yN] "
+    read ans
+    case $ans in
+        [yY]) rm -f $epub_name;;
+        *) echo "canceled."; exit;;
+    esac
+fi
+
+cd $epub_dir
+zip -0 -X ../$epub_name mimetype
+zip -r ../$epub_name * -x mimetype

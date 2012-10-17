@@ -1,0 +1,4 @@
+#!/bin/sh
+# http://hints.macworld.com/article.php?story=20060209130749352
+
+ls -R | grep ":" | sed -e 's/://' -e 's/[^-][^\/]*\//--/g' -e 's/^/   /' -e 's/-/|/'

@@ -1,0 +1,25 @@
+#!/bin/sh
+# http://hajimemasita.blogspot.jp/2009/08/pdfjpeg.html
+
+epub_name=$1
+jpg_dir=$2
+
+if [ "X$epub_name" == "X" ]; then
+    echo "usage: `basename $0` <epub-filename> [jpg-dir]"
+    exit
+fi
+
+if [ "X$jpg_dir" == "X" ]; then
+    jpg_dir=${epub_name}_jpg
+fi
+
+if [ ! -f $epub_name ]; then
+    echo "error: file not found -- $epub_file"
+    exit
+fi
+
+mkdir -p $jpg_dir
+
+gs -dSAFER -dBATCH -dNOPAUSE -sDEVICE=jpeg -r300 \
+    -dTextAlphaBits=4 -dGraphicsAlphaBits=4 -dMaxStripSize=8192 \
+    -sOutputFile=${jpg_dir}/%d.jpg ${epub_name}
