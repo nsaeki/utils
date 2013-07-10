@@ -1,0 +1,53 @@
+#!/usr/bin/env ruby
+# coding: utf-8
+
+# 指定したカラムを比較して、差分を出力する
+
+require 'optparse'
+
+$delimiter = "\t"
+$key_column = 0
+$no_output = false
+$outputs = %w/0.txt 1.txt 2.txt/
+
+def read_column_from_file(file, delimiter="\t", column=0)
+  open(file) do |f|
+    f.inject([]) do |s, l|
+      s << l.strip.split(delimiter)[column]
+    end.uniq()
+  end
+end
+
+OptionParser.new do |opt|
+  opt.on("-d DELIMITER", "change delimiter. (default \\t)") { |v| $delimiter = v }
+  opt.on("-k COLUMN", Integer, "change key column. (default 1)") { |v| $key_column = v-1 }
+  opt.on("-n", "don't create output file.") { |v| $no_output = v }
+
+  opt.banner += " file1 file2"
+  opt.parse!(ARGV)
+
+  if ARGV.size < 2
+    puts opt; exit
+  end
+end
+
+file1, file2 = ARGV
+
+id1 = read_column_from_file(file1, $delimiter, $key_column)
+id2 = read_column_from_file(file2, $delimiter, $key_column)
+
+same = id1 & id2
+file1_only = id1 - id2
+file2_only = id2 - id1
+
+puts "0: same:\t#{same.size}"
+puts "1: #{file1}:\t#{file1_only.size}"
+puts "2: #{file2}:\t#{file2_only.size}"
+
+if not $no_output
+  [same, file1_only, file2_only].each_with_index do |l, i|
+    open($outputs[i], "w") do |f|
+      l.each { |id| f.puts(id) }
+    end
+  end
+end

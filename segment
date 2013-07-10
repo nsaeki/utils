@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+# coding: utf-8
+
+require 'ipaddr'
+p IPAddr.new(ARGV[0]).to_range

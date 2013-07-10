@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+# coding: utf-8
+
+delimiter = "\t"
+output = []
+ARGF.readlines.each do |line|
+  line.split(delimiter).each_with_index do |col, i|
+    output[i] ||= []
+    output[i] << col
+  end
+end
+
+output.each do |l|
+  STDOUT.puts l.join("\t")
+end
