@@ -2,14 +2,17 @@
 # coding: utf-8
 
 delimiter = "\t"
-output = []
-ARGF.readlines.each do |line|
-  line.split(delimiter).each_with_index do |col, i|
-    output[i] ||= []
-    output[i] << col
+
+max_length = []
+rows = ARGF.readlines.map do |line|
+  line.strip.split(delimiter).tap do |r|
+    max_length << r.map(&:length).max
   end
 end
 
-output.each do |l|
-  STDOUT.puts l.join("\t")
+(0..rows[0].size).each do |i|
+  rows.each_with_index do |r, j|
+    printf("%-#{max_length[j]+1}s", r[i])
+  end
+  puts
 end
