@@ -1,0 +1,46 @@
+#!/bin/bash
+#
+# Control VMware Fusion in headless mode
+
+VMRUN='/Applications/VMware Fusion.app/Contents/Library/vmrun'
+DEFAULT_DIR="$HOME/Documents/Virtual Machines.localized"
+
+find_vmx() {
+    vmpath=$1
+    # nothing to do when path exists
+    if ls "$vmpath" > /dev/null 2>&1; then
+        echo $vmpath
+    else
+        vmpath=$DEFAULT_DIR/$vmpath.vmwarevm/$vmpath.vmx
+        if ls "$vmpath" > /dev/null 2>&1; then
+            echo $vmpath
+        fi
+    fi
+}
+
+command=$1
+shift
+
+if [[ $command != 'list' ]]; then
+    vmpath=$(find_vmx $1)
+    shift
+
+    if [[ -z $vmpath ]]; then
+        echo "Coludn't find virtual machine: $vmname"
+        exit 1
+    fi
+fi
+
+options=
+if [[ $command == 'start' ]]; then
+    gui_mode=nogui
+    for i in $*; do
+        if [[ 'nogui' == $i || 'gui' == $i ]]; then
+            gui_mode=
+            break
+        fi
+    done
+    options="$options $gui_mode"
+fi
+
+"$VMRUN" $command "$vmpath" $* $options
