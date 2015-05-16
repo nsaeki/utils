@@ -31,7 +31,6 @@ if [[ $command != 'list' ]]; then
     fi
 fi
 
-options=
 if [[ $command == 'start' ]]; then
     gui_mode=nogui
     for i in $*; do
