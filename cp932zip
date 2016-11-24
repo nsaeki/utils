@@ -1,0 +1,43 @@
+#! /usr/bin/env ruby
+# cp932のファイル名でzip/unzipする
+#
+# Usage:
+#   zip:  cp932zip dir(or file)
+#   unzip: cp932zip -u file.zip
+
+require 'zip'
+require 'fileutils'
+
+def create_zip(zip_filename, dir, options = {})
+  if File.exist?(zip_filename)
+    fail "File #{zip_filename} already exists."
+  end
+
+  files = File.directory?(dir) ? Dir.glob("#{dir}/**/*") : [dir]
+
+  Zip::File.open(zip_filename, Zip::File::CREATE) do |zipfile|
+    files.each do |f|
+      puts f
+      zipfile.add(f.encode('cp932'), f)
+    end
+  end
+end
+
+def unzip(zip_filename)
+  Zip::File.open(zip_filename) do |zip|
+    zip.each do |entry|
+      name = entry.name.force_encoding('cp932').encode('utf-8')
+      puts name
+      File.unlink(name) if File.file?(name)
+      FileUtils.mkdir_p(File.dirname(name)) unless Dir.exist?(File.dirname(name))
+      entry.extract(name)
+    end
+  end
+end
+
+if ARGV[0] == '-u'
+  unzip(ARGV[1])
+else
+  zip_filename = File.basename(ARGV[0] + '.zip')
+  create_zip(zip_filename, ARGV[0])
+end

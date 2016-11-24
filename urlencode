@@ -1,0 +1,15 @@
+#!/usr/bin/env ruby
+require 'pp'
+require 'uri'
+
+case $0
+when /encode/
+  method = URI.method(:encode_www_form)
+when /decode/
+  method = URI.method(:decode_www_form)
+else
+  puts "Can't find method for $0"
+  exit 1
+end
+
+puts ARGV.map{ |a| method.call(a).join('') }
