@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+require 'isbn'
+
+ARGV.each do |i|
+  if i.gsub('-', '').size == 10
+    puts ISBN.thirteen(i)
+  else
+    puts ISBN.ten(i)
+  end
+end
