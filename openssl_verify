@@ -1,0 +1,20 @@
+#!/bin/bash
+# http://httpd.apache.org/docs/2.0/ssl/ssl_faq.html#verify
+
+CERT=${1:?"Usage: $0 server.crt [server.key]"}
+KEY=$2
+
+if [ X$KEY == "X" ]; then
+  KEY=${CERT%.*}.pem
+fi
+
+m1=`openssl x509 -noout -modulus -in $CERT | openssl md5`
+m2=`openssl rsa -noout -modulus -in $KEY | openssl md5`
+
+echo "Server modulus     : $m1"
+echo "Private key modulus: $m2"
+if [ $m1 == $m2 ]; then
+  echo "Matched"
+else
+  echo "Not matched"
+fi
