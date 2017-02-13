@@ -6,7 +6,9 @@
 #   unzip: cp932zip -u file.zip
 
 require 'zip'
+require 'optparse'
 require 'fileutils'
+require 'securerandom'
 
 def create_zip(zip_filename, dir, options = {})
   if File.exist?(zip_filename)
@@ -14,13 +16,21 @@ def create_zip(zip_filename, dir, options = {})
   end
 
   files = File.directory?(dir) ? Dir.glob("#{dir}/**/*") : [dir]
+  if options[:password]
+    enc = Zip::TraditionalEncrypter.new(options[:password])
+  end
 
-  Zip::File.open(zip_filename, Zip::File::CREATE) do |zipfile|
+  io = StringIO.new
+  io.set_encoding('cp932')
+  buf = Zip::OutputStream.write_buffer(io, enc) do |out|
     files.each do |f|
       puts f
-      zipfile.add(f.encode('cp932'), f)
+      out.put_next_entry(f.encode('cp932'))
+      out.write(File.read(f))
     end
   end
+
+  File.open(zip_filename, 'w') { |f| f.write(buf.string) }
 end
 
 def unzip(zip_filename)
@@ -35,9 +45,14 @@ def unzip(zip_filename)
   end
 end
 
-if ARGV[0] == '-u'
+opts = ARGV.getopts('dpu')
+if opts['u'] || opts['d']
   unzip(ARGV[1])
 else
-  zip_filename = File.basename(ARGV[0] + '.zip')
-  create_zip(zip_filename, ARGV[0])
+  if opts['p']
+    password = SecureRandom.base64(15)
+    puts "Password: #{password}"
+  end
+  zip_filename = File.basename(ARGV[0]).sub!(/\.[^.]*$/, '.zip')
+  create_zip(zip_filename, ARGV[0], {password: password})
 end
