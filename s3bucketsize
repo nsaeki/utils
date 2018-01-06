@@ -1,0 +1,29 @@
+#!/bin/bash
+# Print S3 bucketsize
+# Usage: s3bucketsize profile-name bucketname
+
+PROFILE=$1
+BUCKET=$2
+
+if date -d yesterday > /dev/null 2>&1; then
+    START_DATE=`date -d yesterday +%Y-%m-%dT00:00:00+09:00`
+else
+    START_DATE=`date -v -1d +%Y-%m-%dT00:00:00+09:00`
+fi
+END_DATE=`date +%Y-%m-%dT00:00:00+09:00`
+
+OPTS=
+if [ "X$PROFILE" != "X" ]; then
+    OPTS="--profile $PROFILE"
+fi
+OPTS="$OPTS --namespace AWS/S3"
+OPTS="$OPTS --metric-name BucketSizeBytes"
+# OPTS="$OPTS --metric-name NumberOfObjects"
+OPTS="$OPTS --statistics Average"
+OPTS="$OPTS --start-time $START_DATE"
+OPTS="$OPTS --end-time $END_DATE"
+OPTS="$OPTS --period 86400"
+OPTS="$OPTS --dimensions Name=BucketName,Value=${BUCKET} Name=StorageType,Value=StandardStorage"
+
+echo aws cloudwatch get-metric-statistics $OPTS
+aws cloudwatch get-metric-statistics $OPTS
