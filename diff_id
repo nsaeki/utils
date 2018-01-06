@@ -8,6 +8,7 @@ require 'optparse'
 $delimiter = "\t"
 $key_column = 0
 $no_output = false
+$all_columns = false
 $outputs = %w/0.txt 1.txt 2.txt/
 
 def read_column_from_file(file, delimiter="\t", column=0)
@@ -18,7 +19,16 @@ def read_column_from_file(file, delimiter="\t", column=0)
   end
 end
 
+def read_line_from_file(file)
+  open(file) do |f|
+    f.inject([]) do |s, l|
+      s << l.strip
+    end.uniq()
+  end
+end
+
 OptionParser.new do |opt|
+  opt.on("-a", "Diff all columns.") { |v| $all_columns = v }
   opt.on("-d DELIMITER", "change delimiter. (default \\t)") { |v| $delimiter = v }
   opt.on("-k COLUMN", Integer, "change key column. (default 1)") { |v| $key_column = v-1 }
   opt.on("-n", "don't create output file.") { |v| $no_output = v }
@@ -33,8 +43,13 @@ end
 
 file1, file2 = ARGV
 
-id1 = read_column_from_file(file1, $delimiter, $key_column)
-id2 = read_column_from_file(file2, $delimiter, $key_column)
+if $all_columns
+  id1 = read_line_from_file(file1)
+  id2 = read_line_from_file(file2)
+else
+  id1 = read_column_from_file(file1, $delimiter, $key_column)
+  id2 = read_column_from_file(file2, $delimiter, $key_column)
+end
 
 same = id1 & id2
 file1_only = id1 - id2
