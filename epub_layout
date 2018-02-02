@@ -1,0 +1,41 @@
+#!/usr/bin/env ruby
+require 'zip'                   # need to install rubyzip gem
+require 'rexml/document'
+
+def usage
+  STDERR.puts "#{$0} file [...]"
+end
+
+def check_layout(file)
+  Zip::File.open(file) do |zip_file|
+    meta_file = zip_file.select { |i| i.name == "META-INF/container.xml" }.first
+    meta_xml = meta_file.get_input_stream.read
+    meta_xml.force_encoding("utf-8")
+    meta_doc = REXML::Document.new(meta_file.get_input_stream)
+
+    opf_elements = REXML::XPath.match(meta_doc, "/container/rootfiles/rootfile")
+    opf_filename = opf_elements.first.attributes['full-path']
+    opf_file = zip_file.select { |i| i.name == opf_filename }.first
+    opf_xml = opf_file.get_input_stream.read
+    opf_xml.force_encoding("utf-8")
+    opf_doc = REXML::Document.new(opf_xml)
+
+    layout = REXML::XPath.match(opf_doc, "/package/metadata/meta").select { |elem|
+      elem.attributes["property"] == "rendition:layout"
+    }.first
+
+    if layout and layout.text == "pre-paginated"
+      :fixed
+    else
+      :reflow
+    end
+  end
+end
+
+
+if ARGV.size == 1
+  puts check_layout(ARGV[0])
+else
+  ARGV.each { |f| puts [f, check_layout(f)].join("\t") }
+end
+
