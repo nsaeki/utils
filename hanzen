@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+
+CONVERSIONS = [
+    ['a-z', 'ａ-ｚ'],
+    ['A-Z', 'Ａ-Ｚ'],
+    ['0-9', '０-９'],
+    [' ', '　'],
+    ['!-/', '！-／'],
+    [':-@', '：-＠'],
+    ['[-`', '［-｀'],
+    ['{-~', '｛-～'],
+#    ['\\', '￥'],
+#    ['|', '｜'],
+]
+
+from = CONVERSIONS.map {|c| c[0] }.join
+to = CONVERSIONS.map {|c| c[1] }.join
+from, to = to, from if File.basename($0) == 'zenhan'
+puts ARGF.read.tr(from, to)
