@@ -1,0 +1,15 @@
+#!/bin/bash
+
+usage() {
+    echo -e "Usage: $0 MAC_ADDR [BROADCAST]"
+}
+
+MAC_ADDR=${1:?`usage`}
+BROADCAST=${2:-255.255.255.255}
+PORT=8192
+
+echo "Sending magic packet to $MAC_ADDR"
+
+echo -e $(echo $(printf 'f%.0s' {1..12}; printf "$(echo $MAC | sed 's/://g')%.0s" {1..16}) | sed -e 's/../\\x&/g') | \
+    nc -w1 -u -b $BROADCAST $PORT
+
